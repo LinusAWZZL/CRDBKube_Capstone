@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: template
+
+spec:
+  selector:
+    matchLabels:
+      app: template
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: template
+    spec:
+      containers:
+      - name: template
+        image: alpine:3.21.0
+        resources:
+          limits:
+            memory: 8GiB
+            cpu: "4"
+          requests:
+            cpu: "1"
+            memory: 8GiB
+        ports:
+        - containerPort: 80
+        # env:
+        # - name: DATABASE_HOST
+        #   value: db.example.com
+        # - name: API_KEY
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: my-secret
+        #       key: api-key
