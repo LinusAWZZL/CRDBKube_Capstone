@@ -234,7 +234,7 @@ statefulset:
   # Uncomment the following resources definitions or pass them from
   # command line to control the CPU and memory resources allocated
   # by Pods of this StatefulSet.
-  resources: {}
+  resources:
     limits:
       cpu: 100m
       memory: 512Mi
