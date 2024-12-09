@@ -127,7 +127,7 @@ conf:
   #   locality: country=us,region=us-west,datacenter=us-west-1b,rack=12
   #   locality: country=ca,region=ca-east,datacenter=ca-east-2,rack=4
   #   locality: planet=earth,province=manitoba,colo=secondary,power=3
-  locality: ""
+  locality: "planet=earth"
 
   # Run CockroachDB instances in standalone mode with replication disabled
   # (replication factor = 1).
@@ -148,12 +148,6 @@ conf:
   # If non-empty, create a SQL audit log in the specified directory.
   sql-audit-dir: ""
 
-  # WARNING this parameter is deprecated and will be removed in a future version. Use `.service.ports.grpc.internal.port` instead
-  port: ""
-
-  # WARNING this parameter is deprecated and will be removed in a future version. Use `.service.ports.http.port` instead
-  http-port: ""
-
   # CockroachDB's data mount path.
   path: cockroach-data
 
@@ -169,7 +163,7 @@ conf:
     attrs:
 
 statefulset:
-  replicas: 1 #Change to 4 for cluster
+  replicas: 4
   updateStrategy:
     type: RollingUpdate
   podManagementPolicy: Parallel
@@ -240,13 +234,15 @@ statefulset:
   # Uncomment the following resources definitions or pass them from
   # command line to control the CPU and memory resources allocated
   # by Pods of this StatefulSet.
-  resources: {}
-    # limits:
-    #   cpu: 100m
-    #   memory: 512Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 512Mi
+  resources:
+    limits:
+      cpu: 4
+      memory: 8Gi
+    requests:
+      cpu: 1
+      memory: 8Gi
+  tls:
+    enabled: false
 
   # terminationGracePeriodSeconds is the duration in seconds the Pod needs to terminate gracefully.
   terminationGracePeriodSeconds: 300
@@ -390,7 +386,7 @@ securityContext:
 
 # CockroachDB's Prometheus operator ServiceMonitor support
 serviceMonitor:
-  enabled: false
+  enabled: true
   labels: {}
   annotations: {}
   interval: 10s
@@ -416,7 +412,7 @@ storage:
   persistentVolume:
     enabled: true
 
-    size: 100Gi
+    size: 10Gi
 
     # If defined, then `storageClassName: <storageClass>`.
     # If set to "-", then `storageClassName: ""`, which disables dynamic
@@ -426,10 +422,10 @@ storage:
     # GKE, AWS & OpenStack).
     storageClass: ""
 
-    # Additional labels to apply to the created PersistentVolumeClaims.
-    labels: {}
-    # Additional annotations to apply to the created PersistentVolumeClaims.
-    annotations: {}
+    # # Additional labels to apply to the created PersistentVolumeClaims.
+    # labels: {}
+    # # Additional annotations to apply to the created PersistentVolumeClaims.
+    # annotations: {}
 
 
 # Kubernetes Job which initializes multi-node CockroachDB cluster.
@@ -439,36 +435,36 @@ init:
   labels:
     app.kubernetes.io/component: init
 
-  # Additional annotations to apply to this Job.
-  jobAnnotations: {}
+  # # Additional annotations to apply to this Job.
+  # jobAnnotations: {}
 
-  # Additional annotations to apply to the Pod of this Job.
-  annotations: {}
+  # # Additional annotations to apply to the Pod of this Job.
+  # annotations: {}
 
-  # Affinity rules for scheduling the Pod of this Job.
-  # https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#node-affinity
-  affinity: {}
+  # # Affinity rules for scheduling the Pod of this Job.
+  # # https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#node-affinity
+  # affinity: {}
 
-  # Node selection constraints for scheduling the Pod of this Job.
-  # https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
-  nodeSelector: {}
+  # # Node selection constraints for scheduling the Pod of this Job.
+  # # https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+  # nodeSelector: {}
 
-  # Taints to be tolerated by the Pod of this Job.
-  # https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: []
+  # # Taints to be tolerated by the Pod of this Job.
+  # # https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  # tolerations: []
 
   # The init Pod runs at cluster creation to initialize CockroachDB. It finishes
   # quickly and doesn't continue to consume resources in the Kubernetes
   # cluster. Normally, you should leave this section commented out, but if your
   # Kubernetes cluster uses Resource Quotas and requires all pods to specify
   # resource requests or limits, you can set those here.
-  resources: {}
-    # requests:
-    #   cpu: "10m"
-    #   memory: "128Mi"
-    # limits:
-    #   cpu: "10m"
-    #   memory: "128Mi"
+  resources:
+    requests:
+      cpu: "10m"
+      memory: "16Gi"
+    limits:
+      cpu: "10m"
+      memory: "16Gi"
 
   # terminationGracePeriodSeconds is the duration in seconds the Pod needs to terminate gracefully.
   terminationGracePeriodSeconds: 300
@@ -486,166 +482,166 @@ init:
   provisioning:
     enabled: false
     # https://www.cockroachlabs.com/docs/stable/cluster-settings.html
-    clusterSettings:
-      # cluster.organization: "'FooCorp - Local Testing'"
-      # enterprise.license: "'xxxxx'"
-    users: []
-    # - name:
-    #   password:
-    #   # https://www.cockroachlabs.com/docs/stable/create-user.html#parameters
-    #   options: [LOGIN]
-    databases: []
-    # - name:
-    #   # https://www.cockroachlabs.com/docs/stable/create-database.html#parameters
-    #   options: [encoding='utf-8']
-    #   owners: []
-    #   # https://www.cockroachlabs.com/docs/stable/grant.html#parameters
-    #   owners_with_grant_option: []
-    #   # Backup schedules are not idemponent for now and will fail on next run
-    #   # https://github.com/cockroachdb/cockroach/issues/57892
-    #   backup:
-    #     into: s3://
-    #     # Enterprise-only option (revision_history)
-    #     # https://www.cockroachlabs.com/docs/stable/create-schedule-for-backup.html#backup-options
-    #     options: [revision_history]
-    #     recurring: '@always'
-    #     # Enterprise-only feature. Remove this value to use `FULL BACKUP ALWAYS`
-    #     fullBackup: '@daily'
-    #     schedule:
-    #       # https://www.cockroachlabs.com/docs/stable/create-schedule-for-backup.html#schedule-options
-    #       options: [first_run = 'now']
+    # clusterSettings:
+    #   # cluster.organization: "'FooCorp - Local Testing'"
+    #   # enterprise.license: "'xxxxx'"
+    # users: []
+    # # - name:
+    # #   password:
+    # #   # https://www.cockroachlabs.com/docs/stable/create-user.html#parameters
+    # #   options: [LOGIN]
+    # databases: []
+    # # - name:
+    # #   # https://www.cockroachlabs.com/docs/stable/create-database.html#parameters
+    # #   options: [encoding='utf-8']
+    # #   owners: []
+    # #   # https://www.cockroachlabs.com/docs/stable/grant.html#parameters
+    # #   owners_with_grant_option: []
+    # #   # Backup schedules are not idemponent for now and will fail on next run
+    # #   # https://github.com/cockroachdb/cockroach/issues/57892
+    # #   backup:
+    # #     into: s3://
+    # #     # Enterprise-only option (revision_history)
+    # #     # https://www.cockroachlabs.com/docs/stable/create-schedule-for-backup.html#backup-options
+    # #     options: [revision_history]
+    # #     recurring: '@always'
+    # #     # Enterprise-only feature. Remove this value to use `FULL BACKUP ALWAYS`
+    # #     fullBackup: '@daily'
+    # #     schedule:
+    # #       # https://www.cockroachlabs.com/docs/stable/create-schedule-for-backup.html#schedule-options
+    # #       options: [first_run = 'now']
 
 
 # Whether to run securely using TLS certificates.
 tls:
-  enabled: true
-  copyCerts:
-    image: busybox
-  certs:
-    # Bring your own certs scenario. If provided, tls.init section will be ignored.
-    provided: false
-    # Secret name for the client root cert.
-    clientRootSecret: cockroachdb-root
-    # Secret name for node cert.
-    nodeSecret: cockroachdb-node
-    # Secret name for CA cert
-    caSecret: cockroach-ca
-    # Enable if the secret is a dedicated TLS.
-    # TLS secrets are created by cert-mananger, for example.
-    tlsSecret: false
-    # Enable if the you want cockroach db to create its own certificates
-    selfSigner:
-      # If set, the cockroach db will generate its own certificates
-      enabled: true
-      # Run selfSigner as non-root
-      securityContext:
-        enabled: true
-      # If set, the user should provide the CA certificate to sign other certificates.
-      caProvided: false
-      # It holds the name of the secret with caCerts. If caProvided is set, this can not be empty.
-      caSecret: ""
-      # Minimum Certificate duration for all the certificates, all certs duration will be validated against this.
-      minimumCertDuration: 624h
-      # Duration of CA certificates in hour
-      caCertDuration: 43800h
-      # Expiry window of CA certificates means a window before actual expiry in which CA certs should be rotated.
-      caCertExpiryWindow: 648h
-      # Duration of Client certificates in hour
-      clientCertDuration: 672h
-      # Expiry window of client certificates means a window before actual expiry in which client certs should be rotated.
-      clientCertExpiryWindow: 48h
-      # Duration of node certificates in hour
-      nodeCertDuration: 8760h
-      # Expiry window of node certificates means a window before actual expiry in which node certs should be rotated.
-      nodeCertExpiryWindow: 168h
-      # If set, the cockroachdb cert selfSigner will rotate the certificates before expiry.
-      rotateCerts: true
-      # Wait time for each cockroachdb replica to become ready once it comes in running state. Only considered when rotateCerts is set to true
-      readinessWait: 30s
-      # Wait time for each cockroachdb replica to get to running state. Only considered when rotateCerts is set to true
-      podUpdateTimeout: 2m
-      # ServiceAccount annotations for selfSigner jobs (e.g. for attaching AWS IAM roles to pods)
-      svcAccountAnnotations: {}
+  enabled: false
+  # copyCerts:
+  #   image: busybox
+  # certs:
+  #   # Bring your own certs scenario. If provided, tls.init section will be ignored.
+  #   provided: false
+  #   # Secret name for the client root cert.
+  #   clientRootSecret: cockroachdb-root
+  #   # Secret name for node cert.
+  #   nodeSecret: cockroachdb-node
+  #   # Secret name for CA cert
+  #   caSecret: cockroach-ca
+  #   # Enable if the secret is a dedicated TLS.
+  #   # TLS secrets are created by cert-mananger, for example.
+  #   tlsSecret: false
+  #   # Enable if the you want cockroach db to create its own certificates
+  #   selfSigner:
+  #     # If set, the cockroach db will generate its own certificates
+  #     enabled: true
+  #     # Run selfSigner as non-root
+  #     securityContext:
+  #       enabled: true
+  #     # If set, the user should provide the CA certificate to sign other certificates.
+  #     caProvided: false
+  #     # It holds the name of the secret with caCerts. If caProvided is set, this can not be empty.
+  #     caSecret: ""
+  #     # Minimum Certificate duration for all the certificates, all certs duration will be validated against this.
+  #     minimumCertDuration: 624h
+  #     # Duration of CA certificates in hour
+  #     caCertDuration: 43800h
+  #     # Expiry window of CA certificates means a window before actual expiry in which CA certs should be rotated.
+  #     caCertExpiryWindow: 648h
+  #     # Duration of Client certificates in hour
+  #     clientCertDuration: 672h
+  #     # Expiry window of client certificates means a window before actual expiry in which client certs should be rotated.
+  #     clientCertExpiryWindow: 48h
+  #     # Duration of node certificates in hour
+  #     nodeCertDuration: 8760h
+  #     # Expiry window of node certificates means a window before actual expiry in which node certs should be rotated.
+  #     nodeCertExpiryWindow: 168h
+  #     # If set, the cockroachdb cert selfSigner will rotate the certificates before expiry.
+  #     rotateCerts: true
+  #     # Wait time for each cockroachdb replica to become ready once it comes in running state. Only considered when rotateCerts is set to true
+  #     readinessWait: 30s
+  #     # Wait time for each cockroachdb replica to get to running state. Only considered when rotateCerts is set to true
+  #     podUpdateTimeout: 2m
+  #     # ServiceAccount annotations for selfSigner jobs (e.g. for attaching AWS IAM roles to pods)
+  #     svcAccountAnnotations: {}
 
-    # Use cert-manager to issue certificates for mTLS.
-    certManager: false
-    # Specify an Issuer or a ClusterIssuer to use, when issuing
-    # node and client certificates. The values correspond to the
-    # issuerRef specified in the certificate.
-    certManagerIssuer:
-      group: cert-manager.io
-      kind: Issuer
-      name: cockroachdb
-      # Make it false when you are providing your own CA issuer
-      isSelfSignedIssuer: true
-      # Duration of CA certificates in hour
-      caCertDuration: 43800h
-      # Expiry window of CA certificates means a window before actual expiry in which CA certs should be rotated.
-      caCertExpiryWindow: 648h
-      # Duration of Client certificates in hours
-      clientCertDuration: 672h
-      # Expiry window of client certificates means a window before actual expiry in which client certs should be rotated.
-      clientCertExpiryWindow: 48h
-      # Duration of node certificates in hours
-      nodeCertDuration: 8760h
-      # Expiry window of node certificates means a window before actual expiry in which node certs should be rotated.
-      nodeCertExpiryWindow: 168h
+  #   # Use cert-manager to issue certificates for mTLS.
+  #   certManager: false
+  #   # Specify an Issuer or a ClusterIssuer to use, when issuing
+  #   # node and client certificates. The values correspond to the
+  #   # issuerRef specified in the certificate.
+  #   certManagerIssuer:
+  #     group: cert-manager.io
+  #     kind: Issuer
+  #     name: cockroachdb
+  #     # Make it false when you are providing your own CA issuer
+  #     isSelfSignedIssuer: true
+  #     # Duration of CA certificates in hour
+  #     caCertDuration: 43800h
+  #     # Expiry window of CA certificates means a window before actual expiry in which CA certs should be rotated.
+  #     caCertExpiryWindow: 648h
+  #     # Duration of Client certificates in hours
+  #     clientCertDuration: 672h
+  #     # Expiry window of client certificates means a window before actual expiry in which client certs should be rotated.
+  #     clientCertExpiryWindow: 48h
+  #     # Duration of node certificates in hours
+  #     nodeCertDuration: 8760h
+  #     # Expiry window of node certificates means a window before actual expiry in which node certs should be rotated.
+  #     nodeCertExpiryWindow: 168h
 
-  selfSigner:
-    # Additional labels to apply to the Pod of this Job.
-    labels: {}
+  # selfSigner:
+  #   # Additional labels to apply to the Pod of this Job.
+  #   labels: {}
 
-    # Additional annotations to apply to the Pod of this Job.
-    annotations: {}
+  #   # Additional annotations to apply to the Pod of this Job.
+  #   annotations: {}
 
-    # Affinity rules for scheduling the Pod of this Job.
-    # https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#node-affinity
-    affinity: {}
+  #   # Affinity rules for scheduling the Pod of this Job.
+  #   # https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#node-affinity
+  #   affinity: {}
 
-    # Node selection constraints for scheduling the Pod of this Job.
-    # https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
-    nodeSelector: {}
+  #   # Node selection constraints for scheduling the Pod of this Job.
+  #   # https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+  #   nodeSelector: {}
 
-    # Taints to be tolerated by the Pod of this Job.
-    # https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-    tolerations: []
+  #   # Taints to be tolerated by the Pod of this Job.
+  #   # https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  #   tolerations: []
 
-    # Image Placeholder for the selfSigner utility. This will be changed once the CI workflows for the image is in place.
-    image:
-      repository: cockroachlabs-helm-charts/cockroach-self-signer-cert
-      tag: "1.5"
-      pullPolicy: IfNotPresent
-      credentials: {}
-      registry: gcr.io
-      # username: john_doe
-      # password: changeme
+  #   # Image Placeholder for the selfSigner utility. This will be changed once the CI workflows for the image is in place.
+  #   image:
+  #     repository: cockroachlabs-helm-charts/cockroach-self-signer-cert
+  #     tag: "1.5"
+  #     pullPolicy: IfNotPresent
+  #     credentials: {}
+  #     registry: gcr.io
+  #     # username: john_doe
+  #     # password: changeme
 
 networkPolicy:
   enabled: false
 
-  ingress:
-    # List of sources which should be able to access the CockroachDB Pods via
-    # gRPC port. Items in this list are combined using a logical OR operation.
-    # Rules for allowing inter-communication are applied automatically.
-    # If empty, then connections from any Pod is allowed.
-    grpc: []
-      # - podSelector:
-      #     matchLabels:
-      #       app.kubernetes.io/name: my-app-django
-      #       app.kubernetes.io/instance: my-app
+  # ingress:
+  #   # List of sources which should be able to access the CockroachDB Pods via
+  #   # gRPC port. Items in this list are combined using a logical OR operation.
+  #   # Rules for allowing inter-communication are applied automatically.
+  #   # If empty, then connections from any Pod is allowed.
+  #   grpc: []
+  #     # - podSelector:
+  #     #     matchLabels:
+  #     #       app.kubernetes.io/name: my-app-django
+  #     #       app.kubernetes.io/instance: my-app
 
-    # List of sources which should be able to access the CockroachDB Pods via
-    # HTTP port. Items in this list are combined using a logical OR operation.
-    # If empty, then connections from any Pod is allowed.
-    http: []
-      # - namespaceSelector:
-      #     matchLabels:
-      #       project: my-project
+  #   # List of sources which should be able to access the CockroachDB Pods via
+  #   # HTTP port. Items in this list are combined using a logical OR operation.
+  #   # If empty, then connections from any Pod is allowed.
+  #   http: []
+  #     # - namespaceSelector:
+  #     #     matchLabels:
+  #     #       project: my-project
 
 # To put the admin interface behind Identity Aware Proxy (IAP) on Google Cloud Platform
 # make sure to set ingress.paths: ['/*']
-iap:
-  enabled: false
-  # Create Google Cloud OAuth credentials and set client id and secret
-  # clientId:
-  # clientSecret:
+# iap:
+#   enabled: false
+#   Create Google Cloud OAuth credentials and set client id and secret
+#   clientId:
+#   clientSecret:
