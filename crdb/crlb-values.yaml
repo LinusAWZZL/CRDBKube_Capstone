@@ -241,6 +241,8 @@ statefulset:
     requests:
       cpu: 100m
       memory: 512Mi
+  tls:
+    enabled: false
 
   # terminationGracePeriodSeconds is the duration in seconds the Pod needs to terminate gracefully.
   terminationGracePeriodSeconds: 300

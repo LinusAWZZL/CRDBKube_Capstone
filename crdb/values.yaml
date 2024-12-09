@@ -169,7 +169,7 @@ conf:
     attrs:
 
 statefulset:
-  replicas: 3
+  replicas: 1 #Change to 4 for cluster
   updateStrategy:
     type: RollingUpdate
   podManagementPolicy: Parallel
