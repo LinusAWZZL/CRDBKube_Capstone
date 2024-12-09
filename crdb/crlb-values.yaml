@@ -514,7 +514,7 @@ init:
 
 # Whether to run securely using TLS certificates.
 tls:
-  enabled: true
+  enabled: false
   copyCerts:
     image: busybox
   certs:
