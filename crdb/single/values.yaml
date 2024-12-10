@@ -14,7 +14,7 @@ statefulset:
     enabled: false
 
 storage:
-  hostPath: ""
+  hostPath: "D:\Documents\Projects\Uni\TA\CRDBKube_Capstone\crdb"
   persistentVolume:
     enabled: true
     size: 10Gi
