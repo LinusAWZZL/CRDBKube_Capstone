@@ -1,8 +1,8 @@
 fullnameOverride: "crdb"
-single-node: true 
+single-node: false 
 
 statefulset:
-  replicas: 1
+  replicas: 4
   resources:
     limits:
       cpu: 4
