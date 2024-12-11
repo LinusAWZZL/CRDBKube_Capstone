@@ -1,8 +1,6 @@
-INSERT INTO account (Uname, Pass) VALUES ('admin', 'password123'), ('user1', 'pass456');
-
 DO $$
 BEGIN
-  FOR i IN 1..300 LOOP
+  FOR i IN 303..3000 LOOP
     INSERT INTO account (Uname, Pass)
     VALUES (
       'user' || i, -- Generates usernames like user1, user2, ...
@@ -13,7 +11,7 @@ END $$;
 
 DO $$
 BEGIN
-  FOR i IN 1..300 LOOP
+  FOR i IN 300..3000 LOOP
     INSERT INTO class (cname, sks)
     VALUES (
       'class' || i,
@@ -24,7 +22,7 @@ END $$;
 
 DO $$
 BEGIN
-  FOR i IN 1..300 LOOP
+  FOR i IN 300..4000 LOOP
     FOR j IN 1..2 LOOP
       DECLARE
         start_time time;
@@ -51,12 +49,12 @@ END $$;
 
 DO $$
 BEGIN
-  FOR i IN 1..900 LOOP
+  FOR i IN 1000..9000 LOOP
     INSERT INTO selected_class (semester, uid, cid)
     VALUES (
             i,
-      trunc(random() * 302 + 1)::int,
-      trunc(random() * 300 + 1)::int
+      trunc(random() * 3000 + 1)::int,
+      trunc(random() * 3000 + 1)::int
     );
   END LOOP;
 END $$;

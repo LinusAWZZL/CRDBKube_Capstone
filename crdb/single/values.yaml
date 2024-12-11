@@ -1,6 +1,11 @@
 fullnameOverride: "crdb"
 single-node: true 
 
+auth:
+  enabled: false
+
+insecure: true
+
 statefulset:
   replicas: 1
   resources:
@@ -10,8 +15,13 @@ statefulset:
     requests:
       cpu: 1
       memory: 8Gi
+  securityContext:
+    enabled: false
   tls:
     enabled: false
+  auth:
+    enabled: false
+  insecure: true
 
 storage:
   hostPath: ""
@@ -20,5 +30,9 @@ storage:
     size: 10Gi
     storageClass: "standard"
 
+
 tls:
   enable: false
+
+securityContext:
+  enabled: false

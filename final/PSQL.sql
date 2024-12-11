@@ -1,56 +1,56 @@
-create table "User"
+create table account
 (
-    UserID integer default nextval('users_uid_seq'::regclass) not null
+    user_id integer default nextval('users_uid_seq'::regclass) not null
         constraint users_pkey
             primary key,
     UName  varchar(50) not null,
     Pass   varchar(50) not null
 );
 
-alter table "User"
+alter table account
     owner to postgres_user;
 
-create table "Class"
+create table class
 (
-    ClassID integer generated always as identity
+    class_id integer generated always as identity
         constraint cid
             primary key,
-    CName   varchar(50),
+    cname   varchar(50),
     sks     integer not null
 );
 
-alter table "Class"
+alter table class
     owner to postgres_user;
 
-create table "SelectedClass"
+create table selected_class
 (
-    SCID serial not null
+    sc_id serial not null
         constraint SC_pk
             primary key,
-    Semester integer,
-    UID      integer
+    semester integer,
+    uid      integer
         constraint selectedclass_user_userid_fk
-            references "User",
-    CID      integer
+            references account,
+    cid      integer
         constraint selectedclass_class_classid_fk
             references class
 );
 
-alter table "SelectedClass"
+alter table selected_class
     owner to postgres_user;
 
-create table "Schedule"
+create table schedule
 (
-    ScheduleID serial not null
+    schedule_id serial not null
         constraint schedule_pk
             primary key,
-    CID        integer not null
+    cid        integer not null
         constraint schedule_class_classid_fk
-            references "Class",
+            references class,
     time_start time not null,
     time_end time not null
 );
 
-alter table "Schedule"
+alter table schedule
     owner to postgres_user;
 
