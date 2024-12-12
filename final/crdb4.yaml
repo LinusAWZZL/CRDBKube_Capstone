@@ -3,7 +3,7 @@
 nameOverride: ""
 
 # Override the resource names created by this chart which originally is generated using release and chart name.
-fullnameOverride: "crdb1"
+fullnameOverride: "crdb4"
 
 image:
   repository: cockroachdb/cockroach
