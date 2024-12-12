@@ -8,8 +8,8 @@ spec:
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  hostPath:
-    path: ""  # Kubernetes uses Unix-style paths; adjust as shown
+  # hostPath:
+  #   path: ""  # Kubernetes uses Unix-style paths; adjust as shown
   storageClassName: "postgres"
 ---
 apiVersion: v1
@@ -54,7 +54,7 @@ spec:
           value: "siak"  # Set the desired database name
         volumeMounts:
         - name: postgres-storage
-          mountPath: ""
+          mountPath: "/var/lib/postgresql/data"
         resources:
           limits:
             cpu: "3"
