@@ -9,7 +9,7 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: /d/Documents/Projects/Uni/TA/DG/postgres  # Kubernetes uses Unix-style paths; adjust as shown
+    path: ""  # Kubernetes uses Unix-style paths; adjust as shown
   storageClassName: "postgres"
 ---
 apiVersion: v1
@@ -54,14 +54,14 @@ spec:
           value: "siak"  # Set the desired database name
         volumeMounts:
         - name: postgres-storage
-          mountPath: /d/Documents/Projects/Uni/TA/DG/postgres
-      resources:
-        limits:
-          cpu: "3"
-          memory: 4Gi
-        requests:
-          cpu: "1"
-          memory: 512Mi
+          mountPath: ""
+        resources:
+          limits:
+            cpu: "3"
+            memory: 4Gi
+          requests:
+            cpu: "1"
+            memory: 512Mi
       volumes:
       - name: postgres-storage
         persistentVolumeClaim:
