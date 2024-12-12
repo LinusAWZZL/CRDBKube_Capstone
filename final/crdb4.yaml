@@ -263,8 +263,8 @@ statefulset:
   # by Pods of this StatefulSet.
   resources: 
     limits:
-      cpu: "4"
-      memory: 8Gi
+      cpu: "3"
+      memory: 4Gi
     requests:
       cpu: "1"
       memory: 512Mi
