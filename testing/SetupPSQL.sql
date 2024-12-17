@@ -1,20 +1,18 @@
 create sequence siak."User_userid_seq"
     as integer;
 
-create sequence siak."Class_classid_seq";
-
 create sequence siak."SelectedClass_scid_seq"
     as integer;
 
 create sequence siak."Schedule_scheduleid_seq"
     as integer;
 
-create sequence siak.class_class_id_seq
+create sequence siak."Class_class_id_seq"
     as integer;
 
 create table siak.account
 (
-    user_id integer   default nextval('siak."User_userid_seq"'::regclass) not null,
+    user_id integer default nextval('siak."User_userid_seq"'::regclass) not null,
     uname   varchar(50)                                                   not null,
     pass    varchar(50)                                                   not null,
     created timestamp default now()                                       not null,
@@ -28,14 +26,14 @@ alter sequence siak."User_userid_seq" owned by siak.account.user_id;
 
 create table siak.class
 (
-    class_id integer generated always as identity,
+    class_id integer default nextval('siak."Class_class_id_seq"'::regclass) not null,
     cname    varchar(50) not null,
     sks      integer     not null,
     constraint cid
         primary key (class_id)
 );
 
-alter sequence siak."Class_classid_seq" owned by siak.class.class_id;
+alter sequence siak."Class_class_id_seq" owned by siak.class.class_id;
 
 create table siak.selected_class
 (
