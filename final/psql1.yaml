@@ -8,9 +8,20 @@ spec:
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
+  local:
+    # path: "/kube/data/"
+  path: "/mnt/d/Documents/Projects/Uni/TA/DG/volumes"
   # hostPath:
   #   path: ""  # Kubernetes uses Unix-style paths; adjust as shown
-  storageClassName: "postgres"
+  # storageClassName: standard
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - postgres
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -22,7 +33,7 @@ spec:
   resources:
     requests:
       storage: 10Gi
-  storageClassName: "postgres"
+  # storageClassName: manual
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -51,10 +62,11 @@ spec:
         - name: POSTGRES_PASSWORD
           value: "postgres_password"  # Set the desired password
         - name: POSTGRES_DB
-          value: "siak"  # Set the desired database name
+          value: "postgres_db"  # Set the desired database name
         volumeMounts:
         - name: postgres-storage
-          mountPath: "/var/lib/postgresql/data"
+          # mountPath: "/kube/data/"
+          mountPath: "/mnt/d/Documents/Projects/Uni/TA/DG/volumes"
         resources:
           limits:
             cpu: "3"

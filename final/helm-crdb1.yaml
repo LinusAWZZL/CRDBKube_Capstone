@@ -3,7 +3,7 @@
 nameOverride: ""
 
 # Override the resource names created by this chart which originally is generated using release and chart name.
-fullnameOverride: "crdb4"
+fullnameOverride: "crdb1"
 
 image:
   repository: cockroachdb/cockroach
@@ -176,7 +176,8 @@ conf:
   http-port: ""
 
   # CockroachDB's data mount path.
-  path: cockroach-data
+  # path: "/kube/data"
+  path: "/mnt/d/Documents/Projects/Uni/TA/DG/volumes"
 
   # CockroachDB's storage configuration https://www.cockroachlabs.com/docs/v21.1/cockroach-start.html#storage
   # Uses --store flag
@@ -190,7 +191,7 @@ conf:
     attrs:
 
 statefulset:
-  replicas: 4
+  replicas: 1
   updateStrategy:
     type: RollingUpdate
   podManagementPolicy: Parallel
@@ -339,9 +340,10 @@ statefulset:
 #      readOnlyRootFilesystem: true
 
   # volumeMounts are mounted on the same path in the main crdb container and all init containers.
-  volumeMounts: []
-#   - name: metadata
-#     mountPath: /metadata
+  volumeMounts: 
+  - name: metadata
+    # mountPath: "/kube/data"
+    mountPath: "/mnt/d/Documents/Projects/Uni/TA/DG/volumes"
 
   # volumes allows you to add additional volumes to cockroachdb statefulset.
   volumes: []
@@ -430,7 +432,8 @@ storage:
   # Absolute path on host to store CockroachDB's data.
   # If not specified, then `emptyDir` will be used instead.
   # If specified, but `persistentVolume.enabled` is `true`, then has no effect.
-  hostPath: ""
+  # hostPath: "/kube/data"
+  hostPath: "/mnt/d/Documents/Projects/Uni/TA/DG/volumes"
 
   # If `enabled` is `true` then a PersistentVolumeClaim will be created and
   # used to store CockroachDB's data, otherwise `hostPath` is used.
