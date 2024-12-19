@@ -1,8 +1,8 @@
-INSERT INTO account (Uname, Pass) VALUES ('admin', 'password123'), ('user1', 'pass456');
+INSERT INTO account (Uname, Pass) VALUES ('admin', 'password123');
 
 DO $$
 BEGIN
-  FOR i IN 1..300 LOOP
+  FOR i IN 1..299 LOOP
     INSERT INTO account (Uname, Pass)
     VALUES (
       'user' || i, -- Generates usernames like user1, user2, ...
@@ -48,15 +48,74 @@ BEGIN
   END LOOP;
 END $$;
 
-
 DO $$
 BEGIN
-  FOR i IN 1..900 LOOP
-    INSERT INTO selected_class (semester, uid, cid)
-    VALUES (
-            i,
-      trunc(random() * 302 + 1)::int,
-      trunc(random() * 300 + 1)::int
-    );
+  FOR i IN 1..300 LOOP
+      FOR j in 1..12::int LOOP
+        INSERT INTO selected_class (semester, uid, cid)
+        VALUES (
+            trunc(random() * 12 + 1)::int,
+          i,
+          trunc(random() * 300 + 1)::int
+        );
+      END LOOP;
   END LOOP;
 END $$;
+
+DO $$
+DECLARE
+    sc_class_id   INTEGER;
+    sem   INTEGER;
+    grade_num  INTEGER;
+    g_letter VARCHAR(2);
+    scid INTEGER;
+    class_sks INTEGER;
+BEGIN
+    scid = 1;
+    -- Outer loop for 300 users
+    FOR i IN 1..300 LOOP
+        -- Inner loop for a random number of classes (1 to 30)
+        FOR j IN 1..12 LOOP
+--             RAISE NOTICE 'uid % sc_id %', i, scid;
+
+            -- Get class_id and semester from selected_class table
+            SELECT cid, semester
+            INTO sc_class_id, sem
+            FROM selected_class
+            WHERE uid = i AND sc_id = scid
+            LIMIT 1;
+
+            SELECT sks
+            INTO class_sks
+            FROM class
+            WHERE class_id = sc_class_id
+            LIMIT 1;
+
+--             RAISE NOTICE '-- sem % class % sks %', sem, sc_class_id, class_sks;
+
+            -- Generate a random grade number (0 to 100)
+            grade_num := FLOOR(RANDOM() * 101);
+
+            -- Determine grade letter based on grade number
+            g_letter := CASE
+                WHEN grade_num BETWEEN 85 AND 100 THEN 'A'
+                WHEN grade_num BETWEEN 80 AND 84 THEN 'A-'
+                WHEN grade_num BETWEEN 75 AND 79 THEN 'B+'
+                WHEN grade_num BETWEEN 70 AND 74 THEN 'B'
+                WHEN grade_num BETWEEN 65 AND 69 THEN 'B-'
+                WHEN grade_num BETWEEN 60 AND 64 THEN 'C+'
+                WHEN grade_num BETWEEN 55 AND 59 THEN 'C'
+                WHEN grade_num BETWEEN 40 AND 54 THEN 'D'
+                ELSE 'E'
+            END;
+
+            -- Insert generated data into the grades table
+            INSERT INTO grades (cid, uid, sc_id, semester, grade_letter, grade_number)
+            VALUES (sc_class_id, i, scid, sem, g_letter, grade_num);
+        scid = scid +1;
+
+        END LOOP; -- End inner loop
+    END LOOP; -- End outer loop
+END $$;
+
+-- 300 + 300 + 600 + Approx. 9000 + 3600 = Approx. 13800

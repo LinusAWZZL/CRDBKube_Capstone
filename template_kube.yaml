@@ -16,13 +16,7 @@ spec:
       containers:
       - name: template
         image: alpine:3.21.0
-        resources:
-          limits:
-            memory: 8GiB
-            cpu: "4"
-          requests:
-            cpu: "1"
-            memory: 8GiB
+
         ports:
         - containerPort: 80
         # env:
