@@ -89,7 +89,7 @@ spec:
               mountPath: /cockroach/cockroach-data
           args:
             - "start"
-            - "--join=crdb4-0.cockroachdb,crdb4-public.svc.cluster.local:26257"
+            - "--join=crdb4.cockroachdb.svc.cluster.local:26257"
             - "--advertise-host=$(HOSTNAME).cockroachdb"
             - "--http-addr=0.0.0.0:8080"
             - "--insecure"
