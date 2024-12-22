@@ -47,7 +47,8 @@ spec:
           emptyDir: {}
   podManagementPolicy: Parallel
   updateStrategy:
-    type: RollingUpdat
+    type: 
+      RollingUpdat
   volumeClaimTemplates:
     - metadata:
         name: crdb4-data
