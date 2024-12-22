@@ -34,13 +34,13 @@ spec:
             - "--advertise-host=$(HOSTNAME).cockroachdb.cockroachdb.svc.cluster.local"
             - "--http-addr=0.0.0.0:8080"
             - "--insecure"
-        resources:
-          limits:
-            cpu: "2"
-            memory: 8Gi
-          requests:
-            cpu: "1"
-            memory: 4Gi
+          resources:
+            limits:
+              cpu: "2"
+              memory: 8Gi
+            requests:
+              cpu: "1"
+              memory: 4Gi
       volumes:
         - name: crdb4-data
           emptyDir: {}
