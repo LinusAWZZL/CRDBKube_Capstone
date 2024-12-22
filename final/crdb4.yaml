@@ -48,7 +48,7 @@ spec:
   podManagementPolicy: Parallel
   updateStrategy:
     type: 
-      RollingUpdat
+      RollingUpdate
   volumeClaimTemplates:
     - metadata:
         name: crdb4-data
