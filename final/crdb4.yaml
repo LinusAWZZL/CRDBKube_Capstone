@@ -14,33 +14,33 @@ spec:
         app: crdb4
     spec:
       tolerations:
-      - key: "node-role.kubernetes.io/control-plane"
-        operator: "Exists"
-        effect: "NoSchedule"
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
       containers:
-      - name: crdb4
-        image: cockroachdb/cockroach:v23.1.8
-        ports:
-          - containerPort: 26257 # SQL Port
-            name: db
-          - containerPort: 8080  # Admin UI
-            name: http
-        volumeMounts:
-          - name: crdb4-data
-            mountPath: /cockroach/cockroach-data
-        args:
-          - "start"
-          - "--join=crdb4-0.cockroachdb, crdb4-public.svc.cluster.local:26257"
-          - "--advertise-host=$(HOSTNAME).cockroachdb"
-          - "--http-addr=0.0.0.0:8080"
-          - "--insecure"
-        resources:
-          limits:
-            cpu: "2"
-            memory: 8Gi
-          requests:
-            cpu: "1"
-            memory: 4Gi
+        - name: crdb4
+          image: cockroachdb/cockroach:v23.1.8
+          ports:
+            - containerPort: 26257 # SQL Port
+              name: db
+            - containerPort: 8080  # Admin UI
+              name: http
+          volumeMounts:
+            - name: crdb4-data
+              mountPath: /cockroach/cockroach-data
+          args:
+            - "start"
+            - "--join=crdb4-0.cockroachdb,crdb4-public.svc.cluster.local:26257"
+            - "--advertise-host=$(HOSTNAME).cockroachdb"
+            - "--http-addr=0.0.0.0:8080"
+            - "--insecure"
+          resources:
+            limits:
+              cpu: "2"
+              memory: 8Gi
+            requests:
+              cpu: "2"
+              memory: 8Gi
       volumes:
         - name: crdb4-data
           emptyDir: {}
