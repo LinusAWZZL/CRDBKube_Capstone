@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  generatename: crdb4-
+  name: crdb4
 spec:
   serviceName: "crdb4"
   replicas: 4
