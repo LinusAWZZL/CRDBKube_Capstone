@@ -19,6 +19,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: crdb4-public
+  namespace: linus
 spec:
   type: LoadBalancer
   ports:
@@ -51,7 +52,7 @@ spec:
   - port: 8080
     targetPort: 8080
     name: http
- publishNotReadyAddresses: true
+  publishNotReadyAddresses: true
   clusterIP: None
   selector:
     app: crdb4
