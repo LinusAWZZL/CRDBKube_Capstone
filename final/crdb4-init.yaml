@@ -1,14 +1,14 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: cluster-init-4
+  name: crdb4-init
   labels:
     app: crdb4
 spec:
   template:
     spec:
       containers:
-      - name: cluster-init
+      - name: crdb4-init
         image: cockroachdb/cockroach:v24.3.0
         imagePullPolicy: IfNotPresent
         command:

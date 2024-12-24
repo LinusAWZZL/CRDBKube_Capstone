@@ -1,30 +1,103 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: psql
+  name: psql4
 spec:
-  serviceName: "psql"
-  replicas: 4
+  serviceName: "psql4"
+  replicas: 1
   selector:
     matchLabels:
-      app: psql
+      app: psql4
   template:
     metadata:
       labels:
-        app: psql
+        app: psql4
     spec:
       tolerations:
         - key: "node-role.kubernetes.io/control-plane"
           operator: "Exists"
           effect: "NoSchedule"
       containers:
-        - name: postgres
+        - name: psql4
           image: postgres:15
           ports:
           - containerPort: 25432
           volumeMounts:
             - name: psql-data
-              mountPath: /postgresql
+              mountPath: /var/lib/postgresql/data
+            - name: psql-conf
+              mountPath: /etc/postgresql/
+          env:
+          - name: POSTGRES_USER
+            value: "postgres_user"  # Set the desired username
+          - name: POSTGRES_PASSWORD
+            value: "postgres_password"  # Set the desired password
+          - name: POSTGRES_DB
+            value: "defaultdb"  # Set the desired database name
+          resources:
+            limits:
+              cpu: "2"
+              memory: 8Gi
+            requests:
+              cpu: "2"
+              memory: 8Gi
+        command: 
+          - "postgres" -c config_file=/etc/postgresql/postgresql.conf"
+          - "bash -c cat <<EOL > /var/lib/postgresql/data/postgresql.conf"
+          - "listen_addresses = '*'"
+          - "wal_level = replica"
+          - "max_wal_senders = 10"
+          - "max_replication_slots = 10"
+          - "archive_mode = on"
+          - "archive_command = 'cp %p /var/lib/postgresql/data/archive/%f'"
+          - "EOL"
+      
+      volumes:
+        - name: psql-data
+          emptyDir: {}
+        nodeAffinity:
+          required:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - osing # Name Cluster 1
+  volumeClaimTemplates:
+    - metadata:
+        name: psql-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 15Gi
+        storageClassName: manual
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: psql4-replica
+spec:
+  serviceName: "psql4"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: psql4
+  template:
+    metadata:
+      labels:
+        app: psql4
+    spec:
+      containers:
+        - name: psql4-replica
+          image: postgres:15
+          ports:
+          - containerPort: 25432
+          volumeMounts:
+            - name: psql-data
+              mountPath: /var/lib/postgresql/data
+            - name: psql-conf
+              mountPath: /etc/postgresql/
           env:
           - name: POSTGRES_USER
             value: "postgres_user"  # Set the desired username
@@ -44,7 +117,7 @@ spec:
           emptyDir: {}
   volumeClaimTemplates:
     - metadata:
-        name: psql-data
+        name: psql-data-replica
       spec:
         accessModes: ["ReadWriteOnce"]
         resources:
@@ -55,7 +128,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: psql
+  name: psql4
 spec:
   ports:
     - port: 25432
@@ -71,7 +144,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: psql-public
+  name: psql4-public
 spec:
   type: LoadBalancer
   ports:
@@ -82,15 +155,15 @@ spec:
     #   targetPort: 8080
     #   name: http
   selector:
-    app: psql
+    app: psql4
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: psql-service
+  name: psql4-service
 spec:
   selector:
-    app: psql
+    app: psql4
   ports:
   - protocol: TCP
     port: 25432

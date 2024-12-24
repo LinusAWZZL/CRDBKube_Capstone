@@ -61,6 +61,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: crdb4
+  namespace: linus
 spec:
   serviceName: "crdb4"
   replicas: 4

@@ -4,12 +4,12 @@ metadata:
   name: psql-node-1 # Name pv 1 for postgresql
 spec:
   capacity:
-    storage: 10Gi
+    storage: 15Gi
   accessModes:
     - ReadWriteOnce
   storageClassName: manual
   local:
-    path: /kube/data/capstone/psql
+    path: /kube/data/capstone/psql/main
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -22,7 +22,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: psql-node-2 # Name pv 2 for postgresql
+  name: psql-replica-2 # Name pv 2 for postgresql
 spec:
   capacity:
     storage: 10Gi
@@ -30,7 +30,7 @@ spec:
     - ReadWriteOnce
   storageClassName: manual
   local:
-    path: /kube/data/capstone/psql
+    path: /kube/data/capstone/psql/rplc
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -43,7 +43,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: psql-node-3 # Name pv 3 for postgresql
+  name: psql-replica-3 # Name pv 3 for postgresql
 spec:
   capacity:
     storage: 10Gi
@@ -51,7 +51,7 @@ spec:
     - ReadWriteOnce
   storageClassName: manual
   local:
-    path: /kube/data/capstone/psql
+    path: /kube/data/capstone/psql/rplc
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -64,7 +64,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: psql-node-4 # Name pv 4 for postgresql
+  name: psql-replica-4 # Name pv 4 for postgresql
 spec:
   capacity:
     storage: 10Gi
@@ -72,7 +72,7 @@ spec:
     - ReadWriteOnce
   storageClassName: manual
   local:
-    path: /kube/data/capstone/psql
+    path: /kube/data/capstone/psql/rplc
   nodeAffinity:
     required:
       nodeSelectorTerms:
