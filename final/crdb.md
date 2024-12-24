@@ -8,6 +8,16 @@ Helm
 
 ## Database set up
 
+```
+kubectl run cockroachdb-client -n cockroachdb -it \
+--image=cockroachdb/cockroach:v23.8.1 \
+--rm \
+--restart=Never \
+-- sql \
+--insecure \
+--host=cockroachdb-public
+```
+
 Once Done:
 kubectl delete -f client-secure1.yaml
 

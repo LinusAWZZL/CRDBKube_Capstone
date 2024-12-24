@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: psql
+spec:
+  serviceName: "psql"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: psql
+  template:
+    metadata:
+      labels:
+        app: psql
+    spec:
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+          - containerPort: 5432
+          volumeMounts:
+            - name: psql-data
+              mountPath: /postgresql
+          env:
+          - name: POSTGRES_USER
+            value: "postgres_user"  # Set the desired username
+          - name: POSTGRES_PASSWORD
+            value: "postgres_password"  # Set the desired password
+          - name: POSTGRES_DB
+            value: "defaultdb"  # Set the desired database name
+          resources:
+            limits:
+              cpu: "2"
+              memory: 8Gi
+            requests:
+              cpu: "2"
+              memory: 8Gi
+      volumes:
+        - name: psql-data
+          emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: psql-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: manual
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: psql
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: db
+    # - port: 8080
+    #   targetPort: 8080
+    #   name: http
+  clusterIP: None
+  selector:
+    app: psql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: psql-public
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: db
+    # - port: 8080
+    #   targetPort: 8080
+    #   name: http
+  selector:
+    app: psql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: psql-service
+spec:
+  selector:
+    app: psql
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
+  type: ClusterIP

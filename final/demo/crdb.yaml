@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Pod
+kind: StatefulSet
 metadata:
   name: crdb1
 spec:
@@ -53,14 +53,6 @@ spec:
           requests:
             storage: 10Gi
         storageClassName: manual
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-        - matchExpressions:
-            - key: kubernetes.io/hostname
-              operator: In
-              values:
-                - osing
 ---
 apiVersion: v1
 kind: Service

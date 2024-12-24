@@ -1,10 +1,10 @@
 apiVersion: apps/v1
-kind: Pod
+kind: StatefulSet
 metadata:
   name: psql
 spec:
   serviceName: "psql"
-  replicas: 1
+  replicas: 4
   selector:
     matchLabels:
       app: psql
@@ -21,7 +21,7 @@ spec:
         - name: postgres
           image: postgres:15
           ports:
-          - containerPort: 5432
+          - containerPort: 25432
           volumeMounts:
             - name: psql-data
               mountPath: /postgresql
@@ -31,7 +31,7 @@ spec:
           - name: POSTGRES_PASSWORD
             value: "postgres_password"  # Set the desired password
           - name: POSTGRES_DB
-            value: "postgres_db"  # Set the desired database name
+            value: "defaultdb"  # Set the desired database name
           resources:
             limits:
               cpu: "2"
@@ -51,14 +51,6 @@ spec:
           requests:
             storage: 10Gi
         storageClassName: manual
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-        - matchExpressions:
-            - key: kubernetes.io/hostname
-              operator: In
-              values:
-                - osing
 ---
 apiVersion: v1
 kind: Service
@@ -66,8 +58,8 @@ metadata:
   name: psql
 spec:
   ports:
-    - port: 5432
-      targetPort: 5432
+    - port: 25432
+      targetPort: 25432
       name: db
     # - port: 8080
     #   targetPort: 8080
@@ -83,8 +75,8 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-    - port: 5432
-      targetPort: 5432
+    - port: 25432
+      targetPort: 25432
       name: db
     # - port: 8080
     #   targetPort: 8080
@@ -101,6 +93,6 @@ spec:
     app: psql
   ports:
   - protocol: TCP
-    port: 5432
-    targetPort: 5432
+    port: 25432
+    targetPort: 25432
   type: ClusterIP
