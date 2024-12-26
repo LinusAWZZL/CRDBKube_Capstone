@@ -72,31 +72,31 @@ def generate_import_queries():
     user_data, class_data, schedule_data, selected_class_data, grades_data = generate_data(10000)
     queries = []
 
-    query_str = "INSERT INTO User (uname, pass) VALUES \n"
+    query_str = "INSERT INTO account (username, pass) VALUES \n"
     for user, data in user_data.items():
-        query_str += f"({user}, {data[1]}),\n"
+        query_str += f"('{user}', '{data[1]}'),\n"
     query_str = query_str[:-2] + ";"
     queries.append(query_str)
 
-    query_str = "INSERT INTO Class (class_code, cname, sks) VALUES \n"
+    query_str = "INSERT INTO course (class_code, class_name, sks) VALUES \n"
     for class_code, data in class_data.items():
         query_str += f"('{class_code}', '{data[1]}', {data[2]}),\n"
     query_str = query_str[:-2] + ";"
     queries.append(query_str)
 
-    query_str = "INSERT INTO Schedule (class_code, time_start, time_end) VALUES \n"
+    query_str = "INSERT INTO schedule (schedule_class, time_start, time_end) VALUES \n"
     for class_code, time_start, time_end in schedule_data:
         query_str += f"('{class_code}', '{time_start}', '{time_end}'),\n"
     query_str = query_str[:-2] + ";"
     queries.append(query_str)
 
-    query_str = "INSERT INTO SelectedClass (user, class, semester) VALUES \n"
+    query_str = "INSERT INTO selected_class (sc_user, sc_class, semester) VALUES \n"
     for uname, class_code, semester in selected_class_data:
         query_str += f"('{uname}', '{class_code}', {semester}),\n"
     query_str = query_str[:-2] + ";"
     queries.append(query_str)
 
-    query_str = "INSERT INTO Grades (user, class, semester, grade_number, grade_letter) VALUES \n"
+    query_str = "INSERT INTO grades (grade_user, grade_class, semester, grade_number, grade_letter) VALUES \n"
     for uname, class_code, semester, grade_number, grade_letter in grades_data:
         query_str += f"('{uname}', '{class_code}', {semester}, {grade_number}, '{grade_letter}'),\n"
     query_str = query_str[:-2] + ";"
@@ -111,23 +111,23 @@ def generate_insert_queries(total):
     print(user_data)
     # Generate INSERT statements for User table
     for user, data in user_data.items():
-        queries.append(f"INSERT INTO User (uname, pass) VALUES (\'{user}\', \'{data[1]}\');")
+        queries.append(f"INSERT INTO account (username, pass) VALUES (\'{user}\', \'{data[1]}\');")
 
     # Generate INSERT statements for Class table
     for class_code, data in class_data.items():
-        queries.append(f"INSERT INTO Class (class_code, cname, sks) VALUES ('{class_code}', '{data[1]}', {data[2]});")
+        queries.append(f"INSERT INTO course (class_code, class_name, sks) VALUES ('{class_code}', '{data[1]}', {data[2]});")
 
     # Generate INSERT statements for Schedule table
     for class_code, time_start, time_end in schedule_data:
-        queries.append(f"INSERT INTO Schedule (class_code, time_start, time_end) VALUES ('{class_code}', '{time_start}', '{time_end}');")
+        queries.append(f"INSERT INTO schedule (schedule_class, time_start, time_end) VALUES ('{class_code}', '{time_start}', '{time_end}');")
 
     # Generate INSERT statements for SelectedClass table
     for uname, class_code, semester in selected_class_data:
-        queries.append(f"INSERT INTO SelectedClass (user, class, semester) VALUES ('{uname}', '{class_code}', {semester});")
+        queries.append(f"INSERT INTO selected_class (sc_user, sc_class, semester) VALUES ('{uname}', '{class_code}', {semester});")
 
     # Generate INSERT statements for Grades table
     for uname, class_code, semester, grade_number, grade_letter in grades_data:
-        queries.append(f"INSERT INTO Grades (user, class, semester, grade_number, grade_letter) VALUES ('{uname}', '{class_code}', {semester}, {grade_number}, '{grade_letter}');")
+        queries.append(f"INSERT INTO grades (user, class, semester, grade_number, grade_letter) VALUES ('{uname}', '{class_code}', {semester}, {grade_number}, '{grade_letter}');")
 
     return queries
 

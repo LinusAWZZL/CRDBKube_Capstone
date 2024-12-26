@@ -4,11 +4,8 @@ services:
     deploy:
       resources:
         limits:
-          cpu: "2"
-          memory: 8Gi
-        requests:
-          cpu: "2"
-          memory: 8Gi
+          cpus: "2"
+          memory: 8G
     user: postgres
     restart: always
     healthcheck:
