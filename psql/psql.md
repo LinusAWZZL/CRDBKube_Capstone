@@ -1,7 +1,9 @@
 # Postgreslq Set Up
 
 # Requirements
-Kubernetes
+Docker
+psql
+pgpool
 
 ## Database set up
 

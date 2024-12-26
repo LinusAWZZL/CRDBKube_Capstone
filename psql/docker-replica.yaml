@@ -1,0 +1,34 @@
+services:
+  postgres_replica:
+    image: postgres:14-alpine
+    deploy:
+      resources:
+        limits:
+          cpu: "2"
+          memory: 8Gi
+        requests:
+          cpu: "2"
+          memory: 8Gi
+    user: postgres
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user --dbname=postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "<TODO PORT>:5432"
+    environment:
+      PGUSER: replicator
+      PGPASSWORD: replicator_password
+    command:
+      - bash
+      - "-c"
+      - |
+        until pg_basebackup --pgdata=/var/lib/postgresql/data -R --slot=<TODO REPLICA SLOT> --host=10.119.105.102 --port=5432; do
+          echo "Waiting for primary to connect..."
+          sleep 1s;
+        done;
+        echo "Backup done, starting replica..."
+        chmod 0700 /var/lib/postgresql/data;
+        postgres;

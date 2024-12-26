@@ -2,3 +2,5 @@ test.yaml
 final/secret.yaml
 local/
 temp/
+.idea/
+.vscode/
