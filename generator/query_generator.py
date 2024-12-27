@@ -129,12 +129,60 @@ def generate_insert_queries(total):
     for uname, class_code, semester, grade_number, grade_letter in grades_data:
         queries.append(f"INSERT INTO grades (user, class, semester, grade_number, grade_letter) VALUES ('{uname}', '{class_code}', {semester}, {grade_number}, '{grade_letter}');")
 
-    return queries
+    select = generate_select(user_data, class_data, schedule_data, selected_class_data, grades_data)
+    return queries, select
+
+def generate_select(user_data, class_data, schedule_data, selected_class_data, grades_data):
+    select_300 = select_queries(300, user_data, class_data, schedule_data, selected_class_data, grades_data)
+    select_1k = select_queries(1000, user_data, class_data, schedule_data, selected_class_data, grades_data)
+    select_3k = select_queries(3000, user_data, class_data, schedule_data, selected_class_data, grades_data)
+    select_q = [select_300, select_1k, select_3k]
+    return select_q
+
+def select_queries(total, user_data, class_data, schedule_data, selected_class_data, grades_data):
+    n = total/4
+    # Class Average Grade Query
+    # Class Grades Query
+    # Class Schedules Query
+    for i in range(1, n+1):
+        pass
+
+    # Student Classes Query
+    # Student Grades Query
+    # Student Semester Average Query
+    # Student Schedule Query
+    for i in range(1, n+1):
+        pass
+
+    # New Students Query
+    # New Classes Query
+    for i in range(1, n+1):
+        pass
+
+    # Login Query
+    # Available Classes Query
+    # Class Registration Query
+    # Registered Classes Query
+    # Update Class Registration Query
+    # Registered Classes Schedule Query
+    for i in range(1, n+2):
+        pass
+
+    # Students In Class Query
+    # Entering Grades Query
+    # Class Student Grade List
+    # Update Grades Query
+    for i in range(1, n+1):
+        pass
+
+
+
+    pass
 
 # Generate and print the queries
 if __name__ == "__main__":
     # generate_data(10000)
-    sql_queries = generate_import_queries()
+    sql_queries, select_queries = generate_import_queries()
     for query in sql_queries:
         print(query)
 

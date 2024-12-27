@@ -1,0 +1,13 @@
+-- Login Query
+-- SELECT WHERE
+-- Available Classes Query
+-- SELECT 
+-- Class Registration Query
+-- INSERT
+-- Registered Classes Query
+-- JOIN SELECT
+-- Update Class Registration Query
+-- INSERT WHERE
+-- Registered Classes Schedule Query
+-- JOIN SELECT
+
