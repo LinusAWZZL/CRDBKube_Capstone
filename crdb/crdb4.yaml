@@ -41,7 +41,7 @@ spec:
              --insecure
              --advertise-host $(hostname -f)
              --http-addr 0.0.0.0
-             --join crdb4-0.cockroachdb.cockroachdb.svc.cluster.local
+             --join crdb4-0.crdb4.linus.svc.cluster.local # pod.app.namespace
           resources:
             limits:
               cpu: "2"
