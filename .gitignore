@@ -4,3 +4,5 @@ local/
 temp/
 .idea/
 .vscode/
+testing/*.sql
+testing/__pycache__/

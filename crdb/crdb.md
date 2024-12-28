@@ -9,29 +9,24 @@ Helm
 ## Database set up
 
 ```
-kubectl run cockroachdb-client -n cockroachdb -it \
---image=cockroachdb/cockroach:v23.8.1 \
---rm \
---restart=Never \
--- sql \
---insecure \
---host=cockroachdb-public
+kubectl -n linus run cockroachdb-client -it --image=cockroachdb/cockroach:v23.1.8 --rm --restart=Never -- sql --insecure --host=crdb4-public
 ```
 
-Once Done:
-kubectl delete -f client-secure1.yaml
+```
+CREATE USER linus;
+GRANT admin TO linus;
+```
+
+Once Done if hang:
+kubectl delete cockroachdb-client -n linus
 
 ## Booting
 
 ## Port forward
 
-### CRDB Single
-kubectl port-forward pod/crdb1-0 26257:26257
-kubectl port-forward svc/crdb1-public 8085:8080
-
 ### CRDB Cluster
-kubectl port-forward pod/crdb4-0 26256:26257
-kubectl port-forward svc/crdb4-public 8084:8080
+kubectl port-forward pod/crdb4-0 26256:26257 -n linus
+kubectl port-forward svc/crdb4-public 8084:8080 -n linus
 
 ## Temp notes
 PV set storageclass manual

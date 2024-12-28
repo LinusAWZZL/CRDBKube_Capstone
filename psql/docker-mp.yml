@@ -86,7 +86,7 @@ services:
     restart: unless-stopped
 
   pgpool-exporter:
-    image: quay.io/pgpool/pgpool2-exporter
+    image: quay.io/pgpool/pgpool2_exporter
     container_name: pgpool-exporter
     ports:
       - "9188:9188"
