@@ -1,62 +1,3 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: crdb4
-  namespace: linus
-spec:
-  ports:
-    - port: 26257
-      targetPort: 26257
-      name: db
-    - port: 8080
-      targetPort: 8080
-      name: http
-  clusterIP: None
-  selector:
-    app: crdb4
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: crdb4-public
-  namespace: linus
-spec:
-  type: LoadBalancer
-  ports:
-    - port: 26257
-      targetPort: 26257
-      name: db
-    - port: 8080
-      targetPort: 8080
-      name: http
-  selector:
-    app: crdb4
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: crbd4-prometheus
-  namespace: linus
-  labels:
-    app: crbd4
-  annotations:
-    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
-    prometheus.io/scrape: "true"
-    prometheus.io/path: "_status/vars"
-    prometheus.io/port: "8080"
-spec:
-  ports:
-  - port: 26257
-    targetPort: 26257
-    name: grpc
-  - port: 8080
-    targetPort: 8080
-    name: http
-  publishNotReadyAddresses: true
-  clusterIP: None
-  selector:
-    app: crdb4
----
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -117,3 +58,62 @@ spec:
           requests:
             storage: 10Gi
         storageClassName: manual
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crdb4
+  namespace: linus
+spec:
+  ports:
+    - port: 26257
+      targetPort: 26257
+      name: db
+    - port: 8080
+      targetPort: 8080
+      name: http
+  clusterIP: None
+  selector:
+    app: crdb4
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crdb4-public
+  namespace: linus
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 26257
+      targetPort: 26257
+      name: db
+    - port: 8080
+      targetPort: 8080
+      name: http
+  selector:
+    app: crdb4
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crbd4-prometheus
+  namespace: linus
+  labels:
+    app: crbd4
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "_status/vars"
+    prometheus.io/port: "8080"
+spec:
+  ports:
+  - port: 26257
+    targetPort: 26257
+    name: grpc
+  - port: 8080
+    targetPort: 8080
+    name: http
+  publishNotReadyAddresses: true
+  clusterIP: None
+  selector:
+    app: crdb4

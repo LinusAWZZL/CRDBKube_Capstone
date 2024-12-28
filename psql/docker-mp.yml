@@ -1,0 +1,97 @@
+version: '3.9'
+services:
+  postgres_primary:
+    container_name: pgmaster
+    image: postgres:14-alpine
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 8G
+    user: postgres
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user --dbname=postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_DB: defaultdb
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST_AUTH_METHOD: "scram-sha-256\nhost replication all 0.0.0.0/0 md5"
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    command:
+      - postgres
+      - "-c"
+      - "wal_level=replica"
+      - "-c"
+      - "hot_standby=on"
+      - "-c"
+      - "max_wal_senders=10"
+      - "-c"
+      - "max_replication_slots=10"
+      - "-c"
+      - "hot_standby_feedback=on"
+    volumes:
+      - ./00_init.sql:/docker-entrypoint-initdb.d/00_init.sql
+
+  pgpool:
+    image: pgpool/pgpool:latest
+    container_name: pgpool
+    links:
+      - "postgres_primary:master"
+    ports:
+      - "25678:5678"
+    volumes:
+      - ./pgpool.conf:/usr/local/etc/pgpool.conf
+      - ./pool_passwd:/usr/local/etc/pool_passwd
+    environment:
+      # Backend node configurations
+      PGPOOL_PARAMS_BACKEND_HOSTNAME0: master
+      PGPOOL_PARAMS_BACKEND_PORT0: "5432"
+      PGPOOL_PARAMS_BACKEND_WEIGHT0: "1"
+      PGPOOL_PARAMS_BACKEND_FLAG0: "ALWAYS_MASTER"  # Primary node flag
+      PGPOOL_PARAMS_BACKEND_APPLICATION_NAME0: "master"
+
+      PGPOOL_PARAMS_BACKEND_HOSTNAME1: "basring"
+      PGPOOL_PARAMS_BACKEND_PORT1: "5433"
+      PGPOOL_PARAMS_BACKEND_WEIGHT1: "1"
+      PGPOOL_PARAMS_BACKEND_FLAG1: "ALLOW_FAILOVER"  # Replica node flag
+      PGPOOL_PARAMS_BACKEND_APPLICATION_NAME1: "replica 1"
+
+      PGPOOL_PARAMS_BACKEND_HOSTNAME1: "djawatan"
+      PGPOOL_PARAMS_BACKEND_PORT1: "5433"
+      PGPOOL_PARAMS_BACKEND_WEIGHT1: "1"
+      PGPOOL_PARAMS_BACKEND_FLAG1: "ALLOW_FAILOVER"  # Replica node flag
+      PGPOOL_PARAMS_BACKEND_APPLICATION_NAME2: "replica 2"
+
+      PGPOOL_PARAMS_BACKEND_HOSTNAME1: "pulaumerah"
+      PGPOOL_PARAMS_BACKEND_PORT1: "5433"
+      PGPOOL_PARAMS_BACKEND_WEIGHT1: "1"
+      PGPOOL_PARAMS_BACKEND_FLAG1: "ALLOW_FAILOVER"  # Replica node flag
+      PGPOOL_PARAMS_BACKEND_APPLICATION_NAME3: "replica 3"
+
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter
+    container_name: postgres-exporter
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres_exporter:password@pgpool:5432/defaultdb?sslmode=disable"
+    depends_on:
+      - pgpool
+    restart: unless-stopped
+
+  pgpool-exporter:
+    image: quay.io/pgpool/pgpool2-exporter
+    container_name: pgpool-exporter
+    ports:
+      - "9188:9188"
+    environment:
+      PGPOOL_DSN: "tcp:pgpool:5678"
+    depends_on:
+      - pgpool
+    restart: unless-stopped

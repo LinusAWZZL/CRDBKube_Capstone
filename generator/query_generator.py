@@ -140,10 +140,29 @@ def generate_select(user_data, class_data, schedule_data, selected_class_data, g
     return select_q
 
 def select_queries(total, user_data, class_data, schedule_data, selected_class_data, grades_data):
-    n = total/4
-    # Class Average Grade Query
+    n = total
     # Class Grades Query
+
+    # "SELECT grades.semester, selected_class.sc_class, grades.grade_user, grades.grade_letter"
+    # "FROM grades"
+    # "WHERE selected_class.sc_class = {random_class}
+        # "AND grades.semester = {random_semester}"
+    # "INNER JOIN selected_class ON selected_class.class_code = grades.class_code"
+        # "AND selected_class.semester = grades.semester"
+        # "AND selected_class.sc_user = grades.grade_user"
+    # "ORDER BY grade_number"
+
+    # Class Average Grade Query
+
+    # "SELECT class.class_name, selected_class.semester, AVG(Grade)"
+    # "FROM selected_class"
+    # "WHERE selected_class.sc_class = {random_class}
+        # "AND selected_class.semester = {random_semester}"
+    # "GROUP BY class.class_name, selected_class.semester"
+
     # Class Schedules Query
+
+
     for i in range(1, n+1):
         pass
 

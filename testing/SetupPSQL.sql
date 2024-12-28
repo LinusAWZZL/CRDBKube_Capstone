@@ -51,6 +51,7 @@ CREATE TABLE public.grades (
 	created timestamp DEFAULT now() NULL,
 	CONSTRAINT grades_unique UNIQUE (grade_id),
 	CONSTRAINT grades_pk PRIMARY KEY (grade_class,grade_user,semester),
-	CONSTRAINT grades_selected_class_fk FOREIGN KEY (semester,grade_user,grade_class) REFERENCES public.selected_class(semester,sc_user,sc_class) ON DELETE CASCADE ON UPDATE CASCADE
+	CONSTRAINT grades_user FOREIGN KEY (grade_user) REFERENCES public.account(username) ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT grades_selected_class_fk FOREIGN KEY (semester,grade_class) REFERENCES public.selected_class(semester,sc_class) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
