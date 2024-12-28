@@ -64,15 +64,21 @@ kind: Service
 metadata:
   name: crdb4
   namespace: linus
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "_status/vars"
+    prometheus.io/port: "8089"
 spec:
   ports:
     - port: 26257
       targetPort: 26257
       name: db
-    - port: 8080
-      targetPort: 8080
+    - port: 8089
+      targetPort: 8089
       name: http
   clusterIP: None
+  publishNotReadyAddresses: true
   selector:
     app: crdb4
 ---
@@ -90,30 +96,5 @@ spec:
     - port: 8080
       targetPort: 8080
       name: http
-  selector:
-    app: crdb4
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: crbd4-prometheus
-  namespace: linus
-  labels:
-    app: crbd4
-  annotations:
-    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
-    prometheus.io/scrape: "true"
-    prometheus.io/path: "_status/vars"
-    prometheus.io/port: "8080"
-spec:
-  ports:
-  - port: 26257
-    targetPort: 26257
-    name: grpc
-  - port: 8080
-    targetPort: 8080
-    name: http
-  publishNotReadyAddresses: true
-  clusterIP: None
   selector:
     app: crdb4

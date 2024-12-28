@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: crdb4-init
+  namespace: linus
   labels:
     app: crdb4
 spec:
