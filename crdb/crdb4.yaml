@@ -29,12 +29,19 @@ spec:
           volumeMounts:
             - name: crdb4-data
               mountPath: /cockroach/cockroach-data
-          args:
-            - "start"
-            - "--join=crdb4-0.cockroachdb.cockroachdb.svc.cluster.local:26257"
-            - "--advertise-host=$(HOSTNAME).cockroachdb.cockroachdb.svc.cluster.local"
-            - "--http-addr=0.0.0.0:8080"
-            - "--insecure"
+          command:
+           - "/bin/bash"
+           - "-ecx"
+           # The use of qualified `hostname -f` is crucial:
+           # Other nodes aren't able to look up the unqualified hostname.
+           - exec
+             /cockroach/cockroach
+             start
+             --logtostderr
+             --insecure
+             --advertise-host $(hostname -f)
+             --http-addr 0.0.0.0
+             --join crdb4-0.cockroachdb.cockroachdb.svc.cluster.local
           resources:
             limits:
               cpu: "2"

@@ -16,5 +16,5 @@ spec:
           - "/cockroach/cockroach"
           - "init"
           - "--insecure"
-          - "--host=crdb4-0.cockroachdb.cockroachdb.svc.cluster.local"
+          - "--host=crdb4-0.cockroachdb"
       restartPolicy: OnFailure
