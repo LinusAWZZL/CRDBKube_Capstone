@@ -66,7 +66,7 @@ def generate_entries(x100, is_import):
         count += 3
         query = "INSERT INTO curriculum (curriculum_name, curriculum_year) VALUES \n"
         for value in generated_data["curriculums"]:
-            query += f"('{value[0]}', {value[1]}),\n"
+            query += f"('{value[0]}', '{value[1]}'),\n"
         query = query[:-2]+";\n"
         queries.append(query)
 
@@ -92,8 +92,8 @@ def generate_entries(x100, is_import):
     for i in range(x100 * 50):
         course_name = f"Course_{i+1}"
         sks = random.randint(2, 6)
-        prerequisite = None
-        course_curriculum = generated_data["curriculums"][random.randint(0, len(generated_data["curriculums"]) - 1)][0]
+        prerequisite = 'null'
+        course_curriculum = generated_data["curriculums"][random.randint(0, len(generated_data["curriculums"]) - 1)][1]
         course_code = f"{random_string(2)}{i:08}"  # max len 10
         generated_data["courses"][course_code] = (course_name, sks, prerequisite, course_curriculum, course_code)
         if not is_import:
@@ -124,8 +124,8 @@ def generate_entries(x100, is_import):
 
     # Generate data for course offerings and schedules
     for i in range(x100 * 200):
-        co_name = f"Offering_{i+1}"
-        class_lecturer = random.choice([l[1] for l in generated_data["lecturers"].keys()])
+        co_name = f"CO{i+1:08}"
+        class_lecturer = random.choice(list(generated_data["lecturers"].keys()))
         semester = random.randint(1, 12)
         co_course = random.choice(list(generated_data["courses"].keys()))
         generated_data["course_offerings"][f"{co_course}, {semester}, {co_name}"] = (co_name, class_lecturer, semester, co_course)
@@ -183,8 +183,8 @@ def generate_entries(x100, is_import):
     print(count)
     return queries
 
-def generate_select():
-    pass
+# def generate_select():
+#     pass
 
 if __name__ == "__main__":
     generated_data = {
@@ -197,37 +197,22 @@ if __name__ == "__main__":
         "registrations": {}
     }
 
-    with open('import.p', 'rb') as fp:
-        data = pickle.load(fp)
     sql_queries = generate_entries(10, True)
     with open("Import.sql", "w") as f:
         f.write("\n".join(sql_queries))
-    with open('import.p', 'wb') as fp:
-        pickle.dump(generated_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open('10k.p', 'rb') as fp:
-        data = pickle.load(fp)
     sql_queries = generate_entries(10, False)
     with open("In10k.sql", "w") as f:
         f.write("\n".join(sql_queries))
-    with open('10k.p', 'wb') as fp:
-        pickle.dump(generated_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open('500k.p', 'rb') as fp:
-        data = pickle.load(fp)
-    sql_queries = generate_entries(500, False)
-    with open("In500k.sql", "w") as f:
-        f.write("\n".join(sql_queries))
-    with open('500k.p', 'wb') as fp:
-        pickle.dump(generated_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
-
-    with open('1m.p', 'rb') as fp:
-        data = pickle.load(fp)
-    sql_queries = generate_entries(1000, False)
-    with open("In1m.sql", "w") as f:
-        f.write("\n".join(sql_queries))
-    with open('1m.p', 'wb') as fp:
-        pickle.dump(generated_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
+    ## WARNING: TAKES FOREVER AND NEVER RETURNS IT, BUT IT DOES RETURN RESULTS
+    # sql_queries = generate_entries(500, False)
+    # with open("In500k.sql", "w") as f:
+    #     f.write("\n".join(sql_queries))
+    #
+    # sql_queries = generate_entries(1000, False)
+    # with open("In1m.sql", "w") as f:
+    #     f.write("\n".join(sql_queries))
 
 
 # Execute queries concurrently
