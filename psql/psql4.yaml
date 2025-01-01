@@ -1,0 +1,339 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: psql4-primary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: psql4
+  template:
+    metadata:
+      labels:
+        app: psql4-primary
+    spec:
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+      containers:
+        - name: psql4-primary
+          image: postgres:14-alpine
+          resources:
+            limits:
+              cpu: "2"
+              memory: "8Gi"
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "user"
+            - name: POSTGRES_DB
+              value: "defaultdb"
+            - name: POSTGRES_PASSWORD
+              value: "password"
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: "scram-sha-256\nhost replication all 0.0.0.0/0 md5"
+            - name: POSTGRES_INITDB_ARGS
+              value: "--auth-host=scram-sha-256"
+          command: ["postgres", "-c", "wal_level=replica", "-c", "hot_standby=on", "-c", "max_wal_senders=10", "-c", "max_replication_slots=10", "-c", "hot_standby_feedback=on"]
+          volumeMounts:
+            - name: init-sql
+              mountPath: /docker-entrypoint-initdb.d/00_init.sql
+              subPath: 00_init.sql
+      volumes:
+        - name: init-sql
+          persistentVolumeClaim:
+            claimName: postgres-init-sql
+  podManagementPolicy: Parallel
+  volumeClaimTemplates:
+    - metadata:
+        name: psql4-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: manual
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: psql4
+spec:
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: psql4
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: psql4-replica
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: psql4
+  template:
+    metadata:
+      labels:
+        app: psql4-replica
+    spec:
+      containers:
+        - name: psql4-replica
+          image: postgres:14-alpine
+          resources:
+            limits:
+              cpu: "2"
+              memory: "8Gi"
+          ports:
+            - containerPort: 5433
+          env:
+            - name: PGUSER
+              value: "replicator"
+            - name: PGPASSWORD
+              value: "replicator_password"
+          command:
+            - bash
+            - "-c"
+            - |
+              until pg_basebackup --pgdata=/var/lib/postgresql/data -R --slot=replica_slot --host=psql4-primary.psql.linus.svc.cluster.local --port=5432; do
+                echo "Waiting for primary to connect..."
+                sleep 1s;
+              done;
+              echo "Backup done, starting replica..."
+              chmod 0700 /var/lib/postgresql/data;
+              postgres;
+    podManagementPolicy: Parallel
+  updateStrategy:
+    type: 
+      RollingUpdate
+  volumeClaimTemplates:
+    - metadata:
+        name: psql4-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: manual
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: psql4-replica
+spec:
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: postgres-replica
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgpool
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgpool
+  template:
+    metadata:
+      labels:
+        app: pgpool
+    spec:
+      containers:
+        - name: pgpool
+          image: pgpool/pgpool:latest
+          resources:
+            limits:
+              cpu: "2"
+              memory: 8Gi
+            requests:
+              cpu: "2"
+              memory: 8Gi
+          ports:
+            - containerPort: 5678
+          env:
+            - name: PGPOOL_PARAMS_BACKEND_HOSTNAME0
+              value: "psql4-primary.psql.linus.svc.cluster.local"
+            - name: PGPOOL_PARAMS_BACKEND_PORT0
+              value: "5432"
+            - name: PGPOOL_PARAMS_BACKEND_WEIGHT0
+              value: "1"
+            - name: PGPOOL_PARAMS_BACKEND_FLAG0
+              value: "ALWAYS_MASTER"
+            - name: PGPOOL_PARAMS_BACKEND_APPLICATION_NAME0
+              value: "master"
+            - name: PGPOOL_PARAMS_BACKEND_HOSTNAME1
+              value: "basring"
+            - name: PGPOOL_PARAMS_BACKEND_PORT1
+              value: "5433"
+            - name: PGPOOL_PARAMS_BACKEND_WEIGHT1
+              value: "1"
+            - name: PGPOOL_PARAMS_BACKEND_FLAG1
+              value: "ALLOW_FAILOVER"
+            - name: PGPOOL_PARAMS_BACKEND_APPLICATION_NAME1
+              value: "replica 1"
+            - name: PGPOOL_PARAMS_BACKEND_HOSTNAME2
+              value: "djawatan"
+            - name: PGPOOL_PARAMS_BACKEND_PORT2
+              value: "5433"
+            - name: PGPOOL_PARAMS_BACKEND_WEIGHT2
+              value: "1"
+            - name: PGPOOL_PARAMS_BACKEND_FLAG2
+              value: "ALLOW_FAILOVER"
+            - name: PGPOOL_PARAMS_BACKEND_APPLICATION_NAME2
+              value: "replica 2"
+            - name: PGPOOL_PARAMS_BACKEND_HOSTNAME3
+              value: "pulaumerah"
+            - name: PGPOOL_PARAMS_BACKEND_PORT3
+              value: "5433"
+            - name: PGPOOL_PARAMS_BACKEND_WEIGHT3
+              value: "1"
+            - name: PGPOOL_PARAMS_BACKEND_FLAG3
+              value: "ALLOW_FAILOVER"
+            - name: PGPOOL_PARAMS_BACKEND_APPLICATION_NAME3
+              value: "replica 3"
+          volumeMounts:
+            - name: pgpool-config
+              mountPath: /usr/local/etc/pgpool.conf
+              subPath: pgpool.conf
+            - name: pgpool-passwd
+              mountPath: /usr/local/etc/pool_passwd
+              subPath: pool_passwd
+      volumes:
+        - name: pgpool-config
+          persistentVolumeClaim:
+            claimName: pgpool-config
+        - name: pgpool-passwd
+          persistentVolumeClaim:
+            claimName: pgpool-passwd
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgpool
+spec:
+  ports:
+    - name: pgpool
+      port: 25678
+      targetPort: 5678
+  selector:
+    app: pgpool
+  type: NodePort
+  nodePort: 25678
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-exporter
+  template:
+    metadata:
+      labels:
+        app: postgres-exporter
+    spec:
+      containers:
+        - name: postgres-exporter
+          image: quay.io/prometheuscommunity/postgres-exporter
+          ports:
+            - containerPort: 9187
+          env:
+            - name: DATA_SOURCE_NAME
+              value: "postgresql://postgres_exporter:password@pgpool.psql.linus.svc.cluster.local:5432/defaultdb?sslmode=disable"
+          restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-exporter
+spec:
+  ports:
+    - name: exporter
+      port: 9187
+      targetPort: 9187
+  selector:
+    app: postgres-exporter
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgpool-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgpool-exporter
+  template:
+    metadata:
+      labels:
+        app: pgpool-exporter
+    spec:
+      containers:
+        - name: pgpool-exporter
+          image: quay.io/pgpool/pgpool2-exporter
+          ports:
+            - containerPort: 9188
+          env:
+            - name: PGPOOL_DSN
+              value: "tcp:pgpool:5678"
+          restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgpool-exporter
+spec:
+  ports:
+    - name: exporter
+      port: 9188
+      targetPort: 9188
+  selector:
+    app: pgpool-exporter
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-init-sql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pgpool-config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pgpool-passwd
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
