@@ -6,3 +6,4 @@ temp/
 .vscode/
 testing/*.sql
 testing/__pycache__/
+testing/queries/

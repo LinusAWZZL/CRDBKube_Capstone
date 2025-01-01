@@ -62,16 +62,16 @@ services:
       PGPOOL_PARAMS_BACKEND_FLAG1: "ALLOW_FAILOVER"  # Replica node flag
       PGPOOL_PARAMS_BACKEND_APPLICATION_NAME1: "replica 1"
 
-      PGPOOL_PARAMS_BACKEND_HOSTNAME1: "djawatan"
-      PGPOOL_PARAMS_BACKEND_PORT1: "5433"
-      PGPOOL_PARAMS_BACKEND_WEIGHT1: "1"
-      PGPOOL_PARAMS_BACKEND_FLAG1: "ALLOW_FAILOVER"  # Replica node flag
+      PGPOOL_PARAMS_BACKEND_HOSTNAME2: "djawatan"
+      PGPOOL_PARAMS_BACKEND_PORT2: "5433"
+      PGPOOL_PARAMS_BACKEND_WEIGHT2: "1"
+      PGPOOL_PARAMS_BACKEND_FLAG2: "ALLOW_FAILOVER"  # Replica node flag
       PGPOOL_PARAMS_BACKEND_APPLICATION_NAME2: "replica 2"
 
-      PGPOOL_PARAMS_BACKEND_HOSTNAME1: "pulaumerah"
-      PGPOOL_PARAMS_BACKEND_PORT1: "5433"
-      PGPOOL_PARAMS_BACKEND_WEIGHT1: "1"
-      PGPOOL_PARAMS_BACKEND_FLAG1: "ALLOW_FAILOVER"  # Replica node flag
+      PGPOOL_PARAMS_BACKEND_HOSTNAME3: "pulaumerah"
+      PGPOOL_PARAMS_BACKEND_PORT3: "5433"
+      PGPOOL_PARAMS_BACKEND_WEIGHT3: "1"
+      PGPOOL_PARAMS_BACKEND_FLAG3: "ALLOW_FAILOVER"  # Replica node flag
       PGPOOL_PARAMS_BACKEND_APPLICATION_NAME3: "replica 3"
 
   postgres-exporter:
@@ -86,7 +86,7 @@ services:
     restart: unless-stopped
 
   pgpool-exporter:
-    image: quay.io/pgpool/pgpool2_exporter
+    image: quay.io/pgpool/pgpool2-exporter
     container_name: pgpool-exporter
     ports:
       - "9188:9188"
