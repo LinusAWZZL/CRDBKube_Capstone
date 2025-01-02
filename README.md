@@ -1,9 +1,11 @@
 # CRDBKube_Capstone
 
 ## Requirements
+an Internet Connection or Postgresql and CRDB images
 Kubernetes
-an Internet Connection
-PSQL
+python
+psql client
+pgpool
 
 ## Minimum Spec
 Clusters:

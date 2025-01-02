@@ -16,6 +16,7 @@ faker = Faker()
 # Variables
 ## Config
 quiet = True
+save_queries = False
 block = "10k"
 N_WORKERS = 100
 
@@ -48,8 +49,9 @@ class Group_1: # Generic :: Multithread
             student_query = f"SELECT * FROM public.student WHERE username LIKE '%{faker.user_name()}%';"
             cursor.execute(student_query)
 
-            # Write queries to file
-            f.write(f"{student_query}\n")
+            if save_queries:
+                # Write queries to file
+                f.write(f"{student_query}\n")
         cursor.close()
         conn.close()
 
@@ -83,8 +85,9 @@ class Group_1: # Generic :: Multithread
             lecturer_query = f"SELECT * FROM public.lecturer WHERE lecturer_name LIKE '%{faker.last_name()}%';"
             cursor.execute(lecturer_query)
 
-            # Write queries to file
-            f.write(f"{lecturer_query}\n")
+            if save_queries:
+                # Write queries to file
+                f.write(f"{lecturer_query}\n")
         cursor.close()
         conn.close()
 
@@ -117,8 +120,9 @@ class Group_1: # Generic :: Multithread
             course_query = f"SELECT * FROM public.student WHERE username LIKE '%{faker.first_name()}%';"
             cursor.execute(course_query)
 
-            # Write queries to file
-            f.write(f"{course_query}\n")
+            if save_queries:
+                # Write queries to file
+                f.write(f"{course_query}\n")
         cursor.close()
         conn.close()
 
@@ -151,8 +155,9 @@ class Group_1: # Generic :: Multithread
             curriculum_query = f"SELECT * FROM public.curriculum WHERE curriculum_name LIKE '%{faker.text(max_nb_chars=20).strip().split()[0]} {faker.text(max_nb_chars=20).strip().split()[0]}%';"
             cursor.execute(curriculum_query)
 
-            # Write queries to file
-            f.write(f"{curriculum_query}\n")
+            if save_queries:
+                # Write queries to file
+                f.write(f"{curriculum_query}\n")
         cursor.close()
         conn.close()
 
@@ -216,7 +221,8 @@ class Group_2(): # Lecturer Generic :: Multithread
                 query = f"SELECT lecturer_code FROM public.lecturer WHERE lecturer_name = '{lecturer_name}' LIMIT 1;\n"
                 cursor.execute(query)
                 lecturer_code = cursor.fetchone()[0]
-                sf.write(query)
+                if save_queries:
+                    sf.write(query)
 
                 # Get lecturer course offering
                 query = f"""
@@ -226,7 +232,8 @@ JOIN public.course_offering co ON lecturer.lecturer_code = co.class_lecturer
 WHERE lecturer.lecturer_name = '{lecturer_name}'
 ORDER BY co.co_course;"""
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
                 semesters = [1] + [t[1] for t in cursor.fetchall()] 
                 current_semester = max(semesters)
 
@@ -240,7 +247,8 @@ WHERE l.lecturer_code = '{lecturer_code}'
 AND co.semester = {current_semester}
 ORDER BY s.created, s.schedule_class;"""
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
                 # Get lecturer students
                 query = f"""
@@ -254,9 +262,11 @@ AND co.semester = {current_semester}
 ORDER BY st.created, st.student_code;
                     """
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
-                sf.write(f"END ; \n")
+                if save_queries:
+                    sf.write(f"END ; \n")
             cursor.close()
             conn.close()
         except Exception as e:
@@ -297,12 +307,14 @@ class Group_3(): # Student Generic :: Multithread
             student_username, student_password = student_data
 
             with open(f"gen_queries/{block}/G3/{tag}{rep}StudentTransaction_{loop}.sql", "a+") as sf:
-                sf.write("BEGIN;\n")
+                if save_queries:
+                    sf.write("BEGIN;\n")
 
                 # Get the student's code
                 cursor.execute("SELECT student_code FROM public.student WHERE username = %s AND pass = %s;", (student_username, student_password))
                 student_code = cursor.fetchone()[0]
-                sf.write(f"SELECT student_code FROM public.student WHERE username = {student_username} AND pass = {student_password};\n")
+                if save_queries:
+                    sf.write(f"SELECT student_code FROM public.student WHERE username = {student_username} AND pass = {student_password};\n")
 
                 # Get student course registration
                 query = f"""
@@ -312,7 +324,8 @@ JOIN public.course_registration cr ON s.student_code = cr.student_code
 WHERE s.student_code = '{student_code}'
 ORDER BY cr.semester;"""
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
                 # Get student's passed SKS and grades
                 query = f"""
@@ -323,7 +336,8 @@ JOIN public.course c ON c.course_code = cr.course_code
 WHERE s.student_code = '{student_code}'
 AND cr.course_passed = true;"""
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
                 # Get student's schedule for the latest semester
                 query = f"""
@@ -340,9 +354,11 @@ AND s.semester = (
 );
                 """
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
-                sf.write("END;\n")
+                if save_queries:
+                    sf.write("END;\n")
 
             cursor.close()
             conn.close()
@@ -401,8 +417,9 @@ VALUES ('{course_code}', '{course_name}', {sks}, '{course_curriculum}', NULL);""
                     try:
                         cur.execute(query)
 
-                        with open(f"gen_queries/{block}/G4/{tag}{rep}InsertCourses_{loop}.sql", "a+") as sf:
-                            sf.write(f"{query}\n")
+                        if save_queries:
+                            with open(f"gen_queries/{block}/G4/{tag}{rep}InsertCourses_{loop}.sql", "a+") as sf:
+                                sf.write(f"{query}\n")
                     except psycopg2.IntegrityError as e:
                         print("integrity error", e)
                         # conn.rollback()  # Handle duplicate primary key issues
@@ -569,7 +586,8 @@ class Group_5(): # IRS / SIAK WAR :: Multithread
             student_username, student_password = student_data
 
             with open(f"gen_queries/{block}/G5/{tag}{rep}StudentRegistration_{loop}.sql", "a+") as sf:
-                sf.write("BEGIN;\n")
+                if save_queries:
+                    sf.write("BEGIN;\n")
 
                 # Student login
                 query = f"""
@@ -580,7 +598,8 @@ AND s.pass = '{student_password}';"""
                 cursor.execute(query)
                 student_code = cursor.fetchone()[0]
                 student_code = str(student_code)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
                 # Get available courses
                 query = f"""
@@ -590,7 +609,8 @@ JOIN public.lecturer l ON co.class_lecturer = l.lecturer_code
 WHERE co.semester = {self.semester};"""
                 cursor.execute(query)
                 offerings = cursor.fetchall()
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
                 # Register to offerings
                 registered = []
@@ -605,7 +625,8 @@ INSERT INTO public.course_registration (student_code, semester, course_code, cou
                     registered.append(id)
                 query = query[:-2] + ";"
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
                 # Get student course registration
                 query = f"""
@@ -617,11 +638,13 @@ JOIN public.lecturer l ON co.class_lecturer = l.lecturer_code
 WHERE s.student_code = '{student_code}'
 AND cr.semester = {self.semester};"""
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
                 
                 # Drop courses
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
                 for _ in range(min(random.randint(1, len(registered)), max(len(registered) - 1, 0))):
                     registration = random.choice(registered)
                     query = f"""
@@ -635,7 +658,8 @@ AND course_name = '{registration[1]}';"""
                     if id in registered:
                         registered.remove(id)
                     cursor.execute(query)
-                    sf.write(f"{query}\n")
+                    if save_queries:
+                        sf.write(f"{query}\n")
 
                 # Add courses
                 registered_codes = {reg[0] for reg in registered}
@@ -649,7 +673,8 @@ VALUES """
                     query += f"('{student_code}', {self.semester}, '{new_course[0]}', '{new_course[2]}'),\n"
                 query = query[:-2] + ";"
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
                 # Get student's schedule for the latest semester
                 query = f"""
@@ -661,9 +686,11 @@ AND s.schedule_class = cr.course_name
 WHERE st.student_code = '{student_code}'
 AND s.semester = {self.semester};"""
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
-                sf.write("\nEND;\n")
+                if save_queries:
+                    sf.write("\nEND;\n")
 
             cursor.close()
             conn.close()
@@ -709,13 +736,15 @@ class Group_6(): # Grading :: Multithread
 
             # Open a file to save the transaction queries
             with open(f"gen_queries/{block}/G6/{tag}{rep}LecturerTransaction_{loop}.sql", "a+") as sf:
-                sf.write("BEGIN;\n")
+                if save_queries:
+                    sf.write("BEGIN;\n")
 
                 # Pick a random lecturer code
                 query = f"SELECT lecturer_code FROM public.lecturer WHERE lecturer_name = '{lecturer_name}' LIMIT 1;"
                 cursor.execute(query)
                 lecturer_code = cursor.fetchone()[0]
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
                 # Get Lecturer Current Course Offering
                 query = f"""
@@ -725,7 +754,8 @@ JOIN public.course_offering co ON l.lecturer_code = co.class_lecturer
 WHERE l.lecturer_code = '{lecturer_code}'
 AND co.semester = {self.semester};"""
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
                 # Get Lecturer Current Course Students Grades
                 query = f"""
@@ -737,7 +767,8 @@ JOIN public.student st ON cr.student_code = st.student_code
 WHERE l.lecturer_code = '{lecturer_code}'
 AND co.semester = {self.semester};"""
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
                 # Add Student Grades [Transaction] for all students with no grade
                 query = f"""
@@ -758,7 +789,8 @@ WHERE course_code IN (
 )
 AND grade_letter IS NULL;"""
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
                 # Get Class Average
                 query = f"""
@@ -771,9 +803,11 @@ AND co.semester = {self.semester}
 GROUP BY co.co_course;
 """
                 cursor.execute(query)
-                sf.write(f"{query}\n")
+                if save_queries:
+                    sf.write(f"{query}\n")
 
-                sf.write("END;\n")
+                if save_queries:
+                    sf.write("END;\n")
 
             cursor.close()
             conn.commit()
@@ -782,15 +816,7 @@ GROUP BY co.co_course;
             print(f"An error occurred during lecturer transaction {loop}: {e}")
 
 
-''' class Group_7(): # FAULT
-     def __init__(self):
-         pass
-    
-     def run(self):
-         pass'''
-
-
-class Group_8(): # EXPENSIVE
+class Group_7(): # EXPENSIVE
     most_costly = ""
     usable_costly = ""
 
@@ -846,101 +872,122 @@ ORDER BY total_sks DESC, average_grade DESC;"""
         cursor.execute(self.most_costly) 
         cursor.execute(self.usable_costly)
 
-        # Write queries to file
-        with open(f"gen_queries/{block}/MostCostly.sql", "w") as f:
-            f.write(f"{self.most_costly}\n")
-            f.write(f"{self.usable_costly}\n")
+        if save_queries:
+            # Write queries to file
+            with open(f"gen_queries/{block}/MostCostly.sql", "w") as f:
+                f.write(f"{self.most_costly}\n")
+                f.write(f"{self.usable_costly}\n")
         
         # Close the connection
         cursor.close()
         conn.close()
 
 
-def test_1():
-    group = Group_1()
-    start_time = time.time()
-    print("Test 1 start")
-    group.search_students()
-    group.search_lecturers()
-    group.search_courses()
-    group.search_curriculums()
-    execution_time = time.time() - start_time
-    print(f"Test 1 done in {execution_time}")
+''' class Group_8(): # FAULT
+     def __init__(self):
+         pass
+    
+     def run(self):
+         pass'''
 
-    with open(f"time_results.txt", "a+") as f:
-        f.write(f"g1 :: {execution_time}\n")
 
-def test_2():
-    group = Group_2()
-    start_time = time.time()
-    print("Test 2 start")
-    group.run()
-    execution_time = time.time() - start_time
-    print(f"Test 2 done in {execution_time}")
+class Tester():
+    def test():
+        Tester.test_1()
+        Tester.test_2()
+        Tester.test_3()
+        Tester.test_4()
+        Tester.test_5()
+        Tester.test_6()
+        Tester.test_7()
+        # Tester.test_8()
 
-    with open(f"time_results.txt", "a+") as f:
-        f.write(f"g2 :: {execution_time}\n")
+    def test_1():
+        group = Group_1()
+        start_time = time.time()
+        print("Test 1 start")
+        group.search_students()
+        group.search_lecturers()
+        group.search_courses()
+        group.search_curriculums()
+        execution_time = time.time() - start_time
+        print(f"Test 1 done in {execution_time}")
 
-def test_3():
-    group = Group_3()
-    start_time = time.time()
-    print("Test 3 start")
-    group.run()
-    execution_time = time.time() - start_time
-    print(f"Test 3 done in {execution_time}")
+        with open(f"time_results.txt", "a+") as f:
+            f.write(f"g1 :: {execution_time}\n")
 
-    with open(f"time_results.txt", "a+") as f:
-        f.write(f"g3 :: {execution_time}\n")
+    def test_2():
+        group = Group_2()
+        start_time = time.time()
+        print("Test 2 start")
+        group.run()
+        execution_time = time.time() - start_time
+        print(f"Test 2 done in {execution_time}")
 
-def test_4():
-    group = Group_4(14)
-    start_time = time.time()
-    print("Test 4 start")
-    group.run()
-    execution_time = time.time() - start_time
-    print(f"Test 4 done in {execution_time}")
+        with open(f"time_results.txt", "a+") as f:
+            f.write(f"g2 :: {execution_time}\n")
 
-    with open(f"time_results.txt", "a+") as f:
-        f.write(f"g4 :: {execution_time}\n")
+    def test_3():
+        group = Group_3()
+        start_time = time.time()
+        print("Test 3 start")
+        group.run()
+        execution_time = time.time() - start_time
+        print(f"Test 3 done in {execution_time}")
 
-def test_5():
-    group = Group_5()
-    start_time = time.time()
-    print("Test 5 start")
-    group.run()
-    execution_time = time.time() - start_time
-    print(f"Test 5 done in {execution_time}")
+        with open(f"time_results.txt", "a+") as f:
+            f.write(f"g3 :: {execution_time}\n")
 
-    with open(f"time_results.txt", "a+") as f:
-        f.write(f"g5 :: {execution_time}\n")
+    def test_4():
+        group = Group_4(14)
+        start_time = time.time()
+        print("Test 4 start")
+        group.run()
+        execution_time = time.time() - start_time
+        print(f"Test 4 done in {execution_time}")
 
-def test_6():
-    group = Group_6()
-    start_time = time.time()
-    print("Test 6 start")
-    group.run()
-    execution_time = time.time() - start_time
-    print(f"Test 6 done in {execution_time}")
+        with open(f"time_results.txt", "a+") as f:
+            f.write(f"g4 :: {execution_time}\n")
 
-    with open(f"time_results.txt", "a+") as f:
-        f.write(f"g6 :: {execution_time}\n")
+    def test_5():
+        group = Group_5()
+        start_time = time.time()
+        print("Test 5 start")
+        group.run()
+        execution_time = time.time() - start_time
+        print(f"Test 5 done in {execution_time}")
 
-'''def test_7():
-    group = Group_7()
-    print("Test 7 start")
-    group.run()
-    print("Test 7 done")'''
+        with open(f"time_results.txt", "a+") as f:
+            f.write(f"g5 :: {execution_time}\n")
 
-def test_8():
+    def test_6():
+        group = Group_6()
+        start_time = time.time()
+        print("Test 6 start")
+        group.run()
+        execution_time = time.time() - start_time
+        print(f"Test 6 done in {execution_time}")
+
+        with open(f"time_results.txt", "a+") as f:
+            f.write(f"g6 :: {execution_time}\n")
+
+    def test_7():
+        group = Group_7()
+        start_time = time.time()
+        print("Test 7 start")
+        group.run()
+        execution_time = time.time() - start_time
+        print(f"Test 7 done in {execution_time}")
+
+        with open(f"time_results.txt", "a+") as f:
+            f.write(f"g7 :: {execution_time}\n")
+
+    '''def test_8():
     group = Group_8()
-    start_time = time.time()
     print("Test 8 start")
     group.run()
-    execution_time = time.time() - start_time
-    print(f"Test 8 done in {execution_time}")
+    print("Test 8 done")'''
 
-    with open(f"time_results.txt", "a+") as f:
-        f.write(f"g8 :: {execution_time}\n")
 
 def data_import():
     conn = psycopg2.connect(**db_config)
@@ -1232,37 +1279,16 @@ if __name__ == "__main__":
     # Import
     print("=10k")
     data_import()
-    test_1()
-    test_2()
-    test_3()
-    test_4()
-    test_5()
-    test_6()
-    ## test_7()
-    test_8()
+    Tester.test()
 
     # In10k
     print("=20k")
     block = "20k"
     in10k("dirty")
-    test_1()
-    test_2()
-    test_3()
-    test_4()
-    test_5()
-    test_6()
-    ## test_7()
-    test_8()
+    Tester.test()
 
     # # In500k
     print("=500k")
     block = "520k"
     in500k("dirty")
-    test_1()
-    test_2()
-    test_3()
-    test_4()
-    test_5()
-    test_6()
-    # ## test_7()
-    test_8()
+    Tester.test()

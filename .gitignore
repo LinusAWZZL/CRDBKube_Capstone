@@ -4,6 +4,6 @@ local/
 temp/
 .idea/
 .vscode/
-testing/*.sql
 testing/__pycache__/
-testing/queries/
+testing/queries/queries*
+testing/queries/00setup
